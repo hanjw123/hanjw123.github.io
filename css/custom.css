@@ -1,0 +1,6 @@
+/* 修改导航栏菜单字体 */
+.navbar-nav .nav-item .nav-link {
+    font-size: 16px !important;       /* 字体大小 */
+    font-family: "Microsoft YaHei", sans-serif !important; /* 字体家族 */
+    font-weight: 500;                 /* 字体粗细 */
+}
