@@ -1,0 +1,1000 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/default.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="hanjw">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="学习目标：深入理解双缓冲技术的原理、优势和应用场景，掌握在C++中实现高效双缓冲队列的技巧.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++实现双缓冲">
+<meta property="og:url" content="https://hanjw123.github.io/2023/05/12/C++%E5%AE%9E%E7%8E%B0%E5%8F%8C%E7%BC%93%E5%86%B2/index.html">
+<meta property="og:site_name">
+<meta property="og:description" content="学习目标：深入理解双缓冲技术的原理、优势和应用场景，掌握在C++中实现高效双缓冲队列的技巧.">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2023-05-11T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-05-13T08:52:51.518Z">
+<meta property="article:author" content="hanjw">
+<meta property="article:tag" content="缓冲设计">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>C++实现双缓冲 - </title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hanjw123.github.io","root":"/","version":"1.9.9","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"expand_all":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"openkounter":{"server_url":"https://open-kounter.mintimate.cn","path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>CCWW Blog</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content (desktop) -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>Home</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>Archives</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>Categories</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>Tags</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>About</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/" target="_self">
+                <i class="iconfont icon-link-fill"></i>
+                <span>Links</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile grid menu overlay -->
+<div id="mobile-grid-menu" class="d-lg-none">
+  <div class="mobile-grid-menu-inner">
+    <div class="container">
+      <div class="row">
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-home-fill"></i>
+                  <span>Home</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/archives/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-archive-fill"></i>
+                  <span>Archives</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/categories/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-category-fill"></i>
+                  <span>Categories</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/tags/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-tags-fill"></i>
+                  <span>Tags</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/about/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-user-fill"></i>
+                  <span>About</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/links/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-link-fill"></i>
+                  <span>Links</span>
+                </div>
+              </a>
+            </div>
+          
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-search-btn">
+            <a href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-search"></i>
+                <span>Search</span>
+              </div>
+            </a>
+          </div>
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-color-toggle-btn"
+               data-label-light="Light"
+               data-label-dark="Dark">
+            <a href="javascript:;" aria-label="Color Toggle">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-dark" id="mobile-color-toggle-icon"></i>
+                <span id="mobile-color-toggle-label">Dark</span>
+              </div>
+            </a>
+          </div>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="C++实现双缓冲"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-05-12 00:00" pubdate>
+          May 12, 2023 am
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          7.9k words
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          66 mins
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">C++实现双缓冲</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <blockquote>
+<p><strong>学习目标</strong>：深入理解双缓冲技术的原理、优势和应用场景，掌握在C++中实现高效双缓冲队列的技巧.</p>
+</blockquote>
+<span id="more"></span>
+
+<h2 id="📚-目录"><a href="#📚-目录" class="headerlink" title="📚 目录"></a>📚 目录</h2><ol>
+<li><a href="#1-%E4%BB%80%E4%B9%88%E6%98%AF%E5%8F%8C%E7%BC%93%E5%86%B2%EF%BC%9F">什么是双缓冲？</a></li>
+<li><a href="#2-%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E5%8F%8C%E7%BC%93%E5%86%B2%EF%BC%9F">为什么需要双缓冲？</a></li>
+<li>[单缓冲 vs 双缓冲性能对比](#3-单缓冲 vs 双缓冲性能对比)</li>
+<li><a href="#4-%E5%8F%8C%E7%BC%93%E5%86%B2%E7%9A%84%E6%A0%B8%E5%BF%83%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F">双缓冲的核心设计模式</a></li>
+<li><a href="#O(1)%E5%A4%8D%E6%9D%82%E5%BA%A6%E4%BA%A4%E6%8D%A2%E6%8A%80%E5%B7%A7">O(1)复杂度交换技巧</a></li>
+<li><a href="#6-%E5%AE%9E%E9%99%85%E5%BA%94%E7%94%A8%E6%A1%88%E4%BE%8B">实际应用案例</a></li>
+<li><a href="#7-%E9%AB%98%E7%BA%A7%E4%BC%98%E5%8C%96%E6%8A%80%E5%B7%A7">高级优化技巧</a></li>
+</ol>
+<hr>
+<h2 id="1-什么是双缓冲？"><a href="#1-什么是双缓冲？" class="headerlink" title="1. 什么是双缓冲？"></a>1. 什么是双缓冲？</h2><h3 id="1-1-概念定义"><a href="#1-1-概念定义" class="headerlink" title="1.1 概念定义"></a>1.1 概念定义</h3><p><strong>双缓冲（Double Buffering）</strong>是一种通过两个缓冲区交替使用来解耦生产者和消费者的技术。</p>
+<figure class="highlight scss"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs scss">传统单缓冲：<br>生产者 → <span class="hljs-selector-attr">[缓冲区]</span> ←→ 消费者<br>         ↑ 读写冲突！<br><br>双缓冲：<br>生产者 → <span class="hljs-selector-attr">[Write Buffer]</span>  <br>                    ↕ swap (瞬间完成)<br>消费者 → <span class="hljs-selector-attr">[Read Buffer]</span><br>         ↑ 读写分离，无冲突！<br></code></pre></td></tr></table></figure>
+
+<h3 id="1-2-核心思想"><a href="#1-2-核心思想" class="headerlink" title="1.2 核心思想"></a>1.2 核心思想</h3><ul>
+<li><strong>写缓冲（Write Buffer）</strong>：仅供生产者写入</li>
+<li><strong>读缓冲（Read Buffer）</strong>：仅供消费者读取</li>
+<li><strong>交换操作（Swap）</strong>：原子性地切换两个缓冲区的角色</li>
+</ul>
+<hr>
+<h2 id="2-为什么需要双缓冲？"><a href="#2-为什么需要双缓冲？" class="headerlink" title="2. 为什么需要双缓冲？"></a>2. 为什么需要双缓冲？</h2><h3 id="2-1-问题场景"><a href="#2-1-问题场景" class="headerlink" title="2.1 问题场景"></a>2.1 问题场景</h3><p>假设你正在开发一个视频处理系统：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// ❌ 单缓冲方案的问题</span><br>std::vector&lt;cv::Mat&gt; buffer;<br><br><span class="hljs-comment">// 加载线程</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">loader</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-keyword">while</span> (<span class="hljs-built_in">hasMoreFrames</span>()) &#123;<br>        <span class="hljs-function">std::lock_guard&lt;std::mutex&gt; <span class="hljs-title">lock</span><span class="hljs-params">(mtx)</span></span>;  <span class="hljs-comment">// 🔒 加锁</span><br>        buffer.<span class="hljs-built_in">push_back</span>(<span class="hljs-built_in">loadFrame</span>());           <span class="hljs-comment">// 📷 IO操作，耗时10ms</span><br>        <span class="hljs-comment">// 锁持有时间 = 10ms！</span><br>    &#125;<br>&#125;<br><br><span class="hljs-comment">// 处理线程</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">processor</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-keyword">while</span> (<span class="hljs-literal">true</span>) &#123;<br>        <span class="hljs-function">std::lock_guard&lt;std::mutex&gt; <span class="hljs-title">lock</span><span class="hljs-params">(mtx)</span></span>;  <span class="hljs-comment">// 🔒 等待加载线程释放锁</span><br>        <span class="hljs-keyword">if</span> (!buffer.<span class="hljs-built_in">empty</span>()) &#123;<br>            <span class="hljs-keyword">auto</span> frame = buffer.<span class="hljs-built_in">front</span>();         <span class="hljs-comment">// ⚡ 快速操作，1μs</span><br>            buffer.<span class="hljs-built_in">erase</span>(buffer.<span class="hljs-built_in">begin</span>());<br>        &#125;<br>        <span class="hljs-comment">// 锁持有时间 = 1μs，但等待时间可能很长！</span><br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><strong>问题分析</strong>：</p>
+<ul>
+<li>🔴 <strong>锁竞争激烈</strong>：IO操作持锁时间长，处理线程长时间等待</li>
+<li>🔴 <strong>吞吐量低</strong>：加载和处理无法真正并行</li>
+<li>🔴 <strong>延迟不稳定</strong>：处理线程的等待时间不可预测</li>
+</ul>
+<h3 id="2-2-双缓冲解决方案"><a href="#2-2-双缓冲解决方案" class="headerlink" title="2.2 双缓冲解决方案"></a>2.2 双缓冲解决方案</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// ✅ 双缓冲方案</span><br>std::vector&lt;cv::Mat&gt; write_buffer;<br>std::vector&lt;cv::Mat&gt; read_buffer;<br>std::atomic&lt;<span class="hljs-type">bool</span>&gt; ready_to_swap&#123;<span class="hljs-literal">false</span>&#125;;<br><br><span class="hljs-comment">// 加载线程</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">loader</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-keyword">while</span> (<span class="hljs-built_in">hasMoreFrames</span>()) &#123;<br>        write_buffer.<span class="hljs-built_in">push_back</span>(<span class="hljs-built_in">loadFrame</span>());  <span class="hljs-comment">// 📷 无锁IO</span><br><br>        <span class="hljs-keyword">if</span> (write_buffer.<span class="hljs-built_in">size</span>() &gt;= BATCH_SIZE) &#123;<br>            ready_to_swap = <span class="hljs-literal">true</span>;  <span class="hljs-comment">// ⚡ 原子操作，纳秒级</span><br>        &#125;<br>    &#125;<br>&#125;<br><br><span class="hljs-comment">// 处理线程</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">processor</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-keyword">while</span> (<span class="hljs-literal">true</span>) &#123;<br>        <span class="hljs-keyword">if</span> (ready_to_swap) &#123;<br>            std::<span class="hljs-built_in">swap</span>(write_buffer, read_buffer);  <span class="hljs-comment">// ⚡ O(1)交换</span><br>            ready_to_swap = <span class="hljs-literal">false</span>;<br>        &#125;<br><br>        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">auto</span>&amp; frame : read_buffer) &#123;<br>            <span class="hljs-built_in">processFrame</span>(frame);  <span class="hljs-comment">// ⚡ 无锁处理</span><br>        &#125;<br>        read_buffer.<span class="hljs-built_in">clear</span>();<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><strong>优势</strong>：</p>
+<ul>
+<li>✅ <strong>无锁读写</strong>：加载和处理完全并行</li>
+<li>✅ <strong>高吞吐量</strong>：充分利用多核CPU</li>
+<li>✅ <strong>低延迟</strong>：处理线程无需等待IO</li>
+</ul>
+<hr>
+<h2 id="3-单缓冲-vs-双缓冲性能对比"><a href="#3-单缓冲-vs-双缓冲性能对比" class="headerlink" title="3. 单缓冲 vs 双缓冲性能对比"></a>3. 单缓冲 vs 双缓冲性能对比</h2><h3 id="3-1-理论分析"><a href="#3-1-理论分析" class="headerlink" title="3.1 理论分析"></a>3.1 理论分析</h3><table>
+<thead>
+<tr>
+<th>指标</th>
+<th>单缓冲</th>
+<th>双缓冲</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>锁竞争</strong></td>
+<td>高（每次IO都持锁）</td>
+<td>极低（仅swap时短暂同步）</td>
+</tr>
+<tr>
+<td><strong>并行度</strong></td>
+<td>低（串行执行）</td>
+<td>高（真正并行）</td>
+</tr>
+<tr>
+<td><strong>内存占用</strong></td>
+<td>1个缓冲区</td>
+<td>2个缓冲区</td>
+</tr>
+<tr>
+<td><strong>实现复杂度</strong></td>
+<td>简单</td>
+<td>中等</td>
+</tr>
+<tr>
+<td><strong>适用场景</strong></td>
+<td>低频数据</td>
+<td>高频流式数据</td>
+</tr>
+</tbody></table>
+<h3 id="3-2-实际测试数据"><a href="#3-2-实际测试数据" class="headerlink" title="3.2 实际测试数据"></a>3.2 实际测试数据</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// 测试场景：处理1000张图像，每张加载10ms，处理5ms</span><br><br><span class="hljs-comment">// 单缓冲</span><br>总时间 ≈ <span class="hljs-number">1000</span> × (<span class="hljs-number">10</span>ms + <span class="hljs-number">5</span>ms) = <span class="hljs-number">15</span>秒<br>CPU利用率 ≈ <span class="hljs-number">50</span>%<br><br><span class="hljs-comment">// 双缓冲（batch_size=10）</span><br>总时间 ≈ <span class="hljs-number">1000</span> × <span class="hljs-built_in">max</span>(<span class="hljs-number">10</span>ms, <span class="hljs-number">5</span>ms) = <span class="hljs-number">10</span>秒<br>CPU利用率 ≈ <span class="hljs-number">90</span>%<br><br>性能提升：<span class="hljs-number">50</span>% 🚀<br></code></pre></td></tr></table></figure>
+
+<h3 id="3-3-基准测试代码"><a href="#3-3-基准测试代码" class="headerlink" title="3.3 基准测试代码"></a>3.3 基准测试代码</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;benchmark/benchmark.h&gt;</span></span><br><br><span class="hljs-function"><span class="hljs-type">static</span> <span class="hljs-type">void</span> <span class="hljs-title">BM_SingleBuffer</span><span class="hljs-params">(benchmark::State&amp; state)</span> </span>&#123;<br>    std::mutex mtx;<br>    std::vector&lt;<span class="hljs-type">int</span>&gt; buffer;<br><br>    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">auto</span> _ : state) &#123;<br>        <span class="hljs-comment">// Producer</span><br>        &#123;<br>            <span class="hljs-function">std::lock_guard&lt;std::mutex&gt; <span class="hljs-title">lock</span><span class="hljs-params">(mtx)</span></span>;<br>            <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">100</span>; ++i) &#123;<br>                buffer.<span class="hljs-built_in">push_back</span>(i);<br>            &#125;<br>        &#125;<br><br>        <span class="hljs-comment">// Consumer</span><br>        &#123;<br>            <span class="hljs-function">std::lock_guard&lt;std::mutex&gt; <span class="hljs-title">lock</span><span class="hljs-params">(mtx)</span></span>;<br>            buffer.<span class="hljs-built_in">clear</span>();<br>        &#125;<br>    &#125;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">static</span> <span class="hljs-type">void</span> <span class="hljs-title">BM_DoubleBuffer</span><span class="hljs-params">(benchmark::State&amp; state)</span> </span>&#123;<br>    std::vector&lt;<span class="hljs-type">int</span>&gt; write_buf, read_buf;<br>    std::atomic&lt;<span class="hljs-type">bool</span>&gt; ready&#123;<span class="hljs-literal">false</span>&#125;;<br><br>    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">auto</span> _ : state) &#123;<br>        <span class="hljs-comment">// Producer (no lock)</span><br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">100</span>; ++i) &#123;<br>            write_buf.<span class="hljs-built_in">push_back</span>(i);<br>        &#125;<br>        ready = <span class="hljs-literal">true</span>;<br><br>        <span class="hljs-comment">// Consumer</span><br>        <span class="hljs-keyword">if</span> (ready) &#123;<br>            std::<span class="hljs-built_in">swap</span>(write_buf, read_buf);<br>            ready = <span class="hljs-literal">false</span>;<br>            read_buf.<span class="hljs-built_in">clear</span>();<br>        &#125;<br>    &#125;<br>&#125;<br><br><span class="hljs-built_in">BENCHMARK</span>(BM_SingleBuffer);<br><span class="hljs-built_in">BENCHMARK</span>(BM_DoubleBuffer);<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="4-双缓冲的核心设计模式"><a href="#4-双缓冲的核心设计模式" class="headerlink" title="4. 双缓冲的核心设计模式"></a>4. 双缓冲的核心设计模式</h2><h3 id="4-1-生产者-消费者模式"><a href="#4-1-生产者-消费者模式" class="headerlink" title="4.1 生产者-消费者模式"></a>4.1 生产者-消费者模式</h3><figure class="highlight arcade"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs arcade">┌──────────────┐              ┌──────────────┐<br>│   Producer   │              │   Consumer   │<br>│  (Loader)    │              │  (Processor) │<br>└──────┬───────┘              └──────┬───────┘<br>       │                             │<br>       ▼                             │<br>  Write <span class="hljs-built_in">Buffer</span>                       │<br>       │                             │<br>       │  Atomic Swap                │<br>       ├────────────────────────────►│<br>                                     ▼<br>                                Read <span class="hljs-built_in">Buffer</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>关键特性</strong>：</p>
+<ul>
+<li>生产者和消费者独立运行</li>
+<li>通过缓冲区解耦</li>
+<li>流量控制通过batch_size调节</li>
+</ul>
+<h3 id="4-2-状态机模型"><a href="#4-2-状态机模型" class="headerlink" title="4.2 状态机模型"></a>4.2 状态机模型</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">enum class</span> <span class="hljs-title class_">BufferState</span> &#123;<br>    WRITING,      <span class="hljs-comment">// 加载中</span><br>    READY_SWAP,   <span class="hljs-comment">// 可交换</span><br>    SWAPPING,     <span class="hljs-comment">// 交换中</span><br>    READING       <span class="hljs-comment">// 读取中</span><br>&#125;;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">DoubleBuffer</span> &#123;<br>    BufferState state_ = BufferState::WRITING;<br><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">transition</span><span class="hljs-params">(BufferState new_state)</span> </span>&#123;<br>        <span class="hljs-keyword">switch</span> (state_) &#123;<br>            <span class="hljs-keyword">case</span> BufferState::WRITING:<br>                <span class="hljs-keyword">if</span> (new_state == BufferState::READY_SWAP) &#123;<br>                    <span class="hljs-comment">// 加载完成，通知消费者</span><br>                    <span class="hljs-built_in">notifyConsumer</span>();<br>                &#125;<br>                <span class="hljs-keyword">break</span>;<br>            <span class="hljs-keyword">case</span> BufferState::READY_SWAP:<br>                <span class="hljs-keyword">if</span> (new_state == BufferState::SWAPPING) &#123;<br>                    <span class="hljs-comment">// 执行交换</span><br>                    <span class="hljs-built_in">performSwap</span>();<br>                &#125;<br>                <span class="hljs-keyword">break</span>;<br>            <span class="hljs-comment">// ...</span><br>        &#125;<br>        state_ = new_state;<br>    &#125;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<h3 id="4-3-观察者模式变体"><a href="#4-3-观察者模式变体" class="headerlink" title="4.3 观察者模式变体"></a>4.3 观察者模式变体</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">DoubleBuffer</span> &#123;<br>    <span class="hljs-keyword">using</span> ProgressCallback = std::function&lt;<span class="hljs-built_in">void</span>(<span class="hljs-type">size_t</span>, <span class="hljs-type">size_t</span>)&gt;;<br>    ProgressCallback progress_callback_;<br><br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">setProgressCallback</span><span class="hljs-params">(ProgressCallback cb)</span> </span>&#123;<br>        progress_callback_ = cb;<br>    &#125;<br><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">onProgressUpdate</span><span class="hljs-params">(<span class="hljs-type">size_t</span> current, <span class="hljs-type">size_t</span> total)</span> </span>&#123;<br>        <span class="hljs-keyword">if</span> (progress_callback_) &#123;<br>            <span class="hljs-built_in">progress_callback_</span>(current, total);<br>        &#125;<br>    &#125;<br>&#125;;<br><br><span class="hljs-comment">// 使用</span><br>buffer.<span class="hljs-built_in">setProgressCallback</span>([](<span class="hljs-type">size_t</span> cur, <span class="hljs-type">size_t</span> total) &#123;<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;Progress: &quot;</span> &lt;&lt; (cur * <span class="hljs-number">100</span> / total) &lt;&lt; <span class="hljs-string">&quot;%&quot;</span> &lt;&lt; std::endl;<br>&#125;);<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="5-O-1-复杂度交换技巧"><a href="#5-O-1-复杂度交换技巧" class="headerlink" title="5. O(1)复杂度交换技巧"></a>5. O(1)复杂度交换技巧</h2><h3 id="5-1-为什么是O-1-？"><a href="#5-1-为什么是O-1-？" class="headerlink" title="5.1 为什么是O(1)？"></a>5.1 为什么是O(1)？</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function">std::vector&lt;<span class="hljs-type">int</span>&gt; <span class="hljs-title">buf1</span><span class="hljs-params">(<span class="hljs-number">1000000</span>, <span class="hljs-number">42</span>)</span></span>;<br><span class="hljs-function">std::vector&lt;<span class="hljs-type">int</span>&gt; <span class="hljs-title">buf2</span><span class="hljs-params">(<span class="hljs-number">1000000</span>, <span class="hljs-number">0</span>)</span></span>;<br><br><span class="hljs-comment">// ❌ O(n)：逐个元素拷贝</span><br>buf1 = buf2;  <span class="hljs-comment">// 拷贝100万元素！</span><br><br><span class="hljs-comment">// ✅ O(1)：交换内部指针</span><br>std::<span class="hljs-built_in">swap</span>(buf1, buf2);  <span class="hljs-comment">// 仅交换3个指针（data, size, capacity）</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>std::vector的内部结构</strong>：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T&gt;<br><span class="hljs-keyword">class</span> <span class="hljs-title class_">vector</span> &#123;<br>    T* data_;        <span class="hljs-comment">// 指向堆内存的指针</span><br>    <span class="hljs-type">size_t</span> size_;    <span class="hljs-comment">// 当前元素数量</span><br>    <span class="hljs-type">size_t</span> capacity_; <span class="hljs-comment">// 容量</span><br><br>    <span class="hljs-comment">// swap只交换这3个成员，不拷贝数据！</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<h3 id="5-2-手动实现swap"><a href="#5-2-手动实现swap" class="headerlink" title="5.2 手动实现swap"></a>5.2 手动实现swap</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T&gt;</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">fast_swap</span><span class="hljs-params">(std::vector&lt;T&gt;&amp; a, std::vector&lt;T&gt;&amp; b)</span> </span>&#123;<br>    <span class="hljs-comment">// 交换指针</span><br>    std::<span class="hljs-built_in">swap</span>(a.data_, b.data_);<br>    std::<span class="hljs-built_in">swap</span>(a.size_, b.size_);<br>    std::<span class="hljs-built_in">swap</span>(a.capacity_, b.capacity_);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="5-3-注意事项"><a href="#5-3-注意事项" class="headerlink" title="5.3 注意事项"></a>5.3 注意事项</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// ⚠️ swap后迭代器失效</span><br>std::vector&lt;<span class="hljs-type">int</span>&gt;::iterator it = buf<span class="hljs-number">1.</span><span class="hljs-built_in">begin</span>();<br>std::<span class="hljs-built_in">swap</span>(buf1, buf2);<br><span class="hljs-comment">// it现在指向buf2的数据！❌</span><br><br><span class="hljs-comment">// ✅ swap后立即重置迭代器</span><br>std::<span class="hljs-built_in">swap</span>(write_buffer, read_buffer);<br>read_iterator = read_buffer.<span class="hljs-built_in">begin</span>();  <span class="hljs-comment">// 重新获取</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="6-实际应用案例"><a href="#6-实际应用案例" class="headerlink" title="6. 实际应用案例"></a>6. 实际应用案例</h2><h3 id="6-1-视频帧处理"><a href="#6-1-视频帧处理" class="headerlink" title="6.1 视频帧处理"></a>6.1 视频帧处理</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">VideoFrameBuffer</span> &#123;<br>    ThreadSafeDoubleBuffer&lt;cv::Mat&gt; frame_buffer_;<br><br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">processVideo</span><span class="hljs-params">(<span class="hljs-type">const</span> std::string&amp; video_path)</span> </span>&#123;<br>        frame_buffer_.<span class="hljs-built_in">start</span>();<br><br>        cv::Mat frame;<br>        <span class="hljs-type">size_t</span> index;<br>        <span class="hljs-keyword">while</span> (frame_buffer_.<span class="hljs-built_in">readNext</span>(frame, index)) &#123;<br>            <span class="hljs-comment">// 图像处理</span><br>            cv::<span class="hljs-built_in">GaussianBlur</span>(frame, frame, cv::<span class="hljs-built_in">Size</span>(<span class="hljs-number">5</span>, <span class="hljs-number">5</span>), <span class="hljs-number">0</span>);<br>            cv::<span class="hljs-built_in">Canny</span>(frame, frame, <span class="hljs-number">50</span>, <span class="hljs-number">150</span>);<br><br>            <span class="hljs-comment">// 显示或保存</span><br>            cv::<span class="hljs-built_in">imshow</span>(<span class="hljs-string">&quot;Processed&quot;</span>, frame);<br>            cv::<span class="hljs-built_in">waitKey</span>(<span class="hljs-number">1</span>);<br>        &#125;<br><br>        frame_buffer_.<span class="hljs-built_in">stop</span>();<br>    &#125;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<h3 id="6-2-GPS数据流处理"><a href="#6-2-GPS数据流处理" class="headerlink" title="6.2 GPS数据流处理"></a>6.2 GPS数据流处理</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">struct</span> <span class="hljs-title class_">GPSPoint</span> &#123;<br>    <span class="hljs-type">double</span> latitude;<br>    <span class="hljs-type">double</span> longitude;<br>    <span class="hljs-type">double</span> altitude;<br>    <span class="hljs-type">uint64_t</span> timestamp;<br>&#125;;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">GPSStreamProcessor</span> &#123;<br>    ThreadSafeDoubleBuffer&lt;GPSPoint&gt; gps_buffer_;<br><br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">processStream</span><span class="hljs-params">(GPSDataSource&amp; source)</span> </span>&#123;<br>        gps_buffer_.<span class="hljs-built_in">start</span>();<br><br>        GPSPoint point;<br>        <span class="hljs-type">size_t</span> index;<br>        std::vector&lt;GPSPoint&gt; trajectory;<br><br>        <span class="hljs-keyword">while</span> (gps_buffer_.<span class="hljs-built_in">readNext</span>(point, index)) &#123;<br>            trajectory.<span class="hljs-built_in">push_back</span>(point);<br><br>            <span class="hljs-comment">// 实时计算轨迹</span><br>            <span class="hljs-keyword">if</span> (trajectory.<span class="hljs-built_in">size</span>() &gt;= <span class="hljs-number">100</span>) &#123;<br>                <span class="hljs-built_in">calculateDistance</span>(trajectory);<br>                trajectory.<span class="hljs-built_in">clear</span>();<br>            &#125;<br>        &#125;<br><br>        gps_buffer_.<span class="hljs-built_in">stop</span>();<br>    &#125;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<h3 id="6-3-日志异步写入"><a href="#6-3-日志异步写入" class="headerlink" title="6.3 日志异步写入"></a>6.3 日志异步写入</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">AsyncLogger</span> &#123;<br>    ThreadSafeDoubleBuffer&lt;std::string&gt; log_buffer_;<br>    std::ofstream log_file_;<br><br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-built_in">AsyncLogger</span>(<span class="hljs-type">const</span> std::string&amp; filename) <br>        : <span class="hljs-built_in">log_file_</span>(filename, std::ios::app) &#123;<br>        log_buffer_.<span class="hljs-built_in">start</span>();<br>    &#125;<br><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">log</span><span class="hljs-params">(<span class="hljs-type">const</span> std::string&amp; message)</span> </span>&#123;<br>        <span class="hljs-comment">// 主线程：快速添加到队列</span><br>        log_buffer_.<span class="hljs-built_in">write</span>(message);<br>    &#125;<br><br><span class="hljs-keyword">private</span>:<br>    <span class="hljs-comment">// 后台线程：批量写入文件</span><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">flushLogs</span><span class="hljs-params">()</span> </span>&#123;<br>        std::string entry;<br>        <span class="hljs-type">size_t</span> index;<br>        <span class="hljs-keyword">while</span> (log_buffer_.<span class="hljs-built_in">readNext</span>(entry, index)) &#123;<br>            log_file_ &lt;&lt; entry &lt;&lt; std::endl;<br>        &#125;<br>        log_file_.<span class="hljs-built_in">flush</span>();<br>    &#125;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="7-高级优化技巧"><a href="#7-高级优化技巧" class="headerlink" title="7. 高级优化技巧"></a>7. 高级优化技巧</h2><h3 id="7-1-预分配内存"><a href="#7-1-预分配内存" class="headerlink" title="7.1 预分配内存"></a>7.1 预分配内存</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// ❌ 动态增长，频繁realloc</span><br>std::vector&lt;T&gt; buffer;<br><span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">1000</span>; ++i) &#123;<br>    buffer.<span class="hljs-built_in">push_back</span>(data);  <span class="hljs-comment">// 可能触发多次realloc</span><br>&#125;<br><br><span class="hljs-comment">// ✅ 预分配</span><br>std::vector&lt;T&gt; buffer;<br>buffer.<span class="hljs-built_in">reserve</span>(<span class="hljs-number">1000</span>);  <span class="hljs-comment">// 一次性分配足够空间</span><br><span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">1000</span>; ++i) &#123;<br>    buffer.<span class="hljs-built_in">push_back</span>(data);  <span class="hljs-comment">// 无realloc</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><strong>性能提升</strong>：减少50-80%的内存分配开销</p>
+<h3 id="7-2-批量大小调优"><a href="#7-2-批量大小调优" class="headerlink" title="7.2 批量大小调优"></a>7.2 批量大小调优</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// 不同数据类型的最佳batch_size</span><br><br><span class="hljs-comment">// 图像数据（大对象）</span><br><span class="hljs-function">ThreadSafeDoubleBuffer&lt;cv::Mat&gt; <span class="hljs-title">image_buffer</span><span class="hljs-params">(<span class="hljs-string">&quot;images&quot;</span>, source, <span class="hljs-number">10</span>)</span></span>;<br><span class="hljs-comment">// batch_size: 5-20</span><br><br><span class="hljs-comment">// GPS数据（小对象）</span><br><span class="hljs-function">ThreadSafeDoubleBuffer&lt;GPSPoint&gt; <span class="hljs-title">gps_buffer</span><span class="hljs-params">(<span class="hljs-string">&quot;gps&quot;</span>, source, <span class="hljs-number">500</span>)</span></span>;<br><span class="hljs-comment">// batch_size: 100-1000</span><br><br><span class="hljs-comment">// 日志字符串（中等）</span><br><span class="hljs-function">ThreadSafeDoubleBuffer&lt;std::string&gt; <span class="hljs-title">log_buffer</span><span class="hljs-params">(<span class="hljs-string">&quot;logs&quot;</span>, source, <span class="hljs-number">100</span>)</span></span>;<br><span class="hljs-comment">// batch_size: 50-200</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>调优原则</strong>：</p>
+<ul>
+<li>大对象 → 小batch（减少内存占用）</li>
+<li>小对象 → 大batch（提高吞吐量）</li>
+<li>平衡点：通过基准测试确定</li>
+</ul>
+<h3 id="7-3-细粒度锁"><a href="#7-3-细粒度锁" class="headerlink" title="7.3 细粒度锁"></a>7.3 细粒度锁</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// ❌ 粗粒度锁</span><br>&#123;<br>    <span class="hljs-function">std::lock_guard&lt;std::mutex&gt; <span class="hljs-title">lock</span><span class="hljs-params">(big_mutex)</span></span>;<br>    <span class="hljs-built_in">loadData</span>();      <span class="hljs-comment">// 10ms</span><br>    <span class="hljs-built_in">processData</span>();   <span class="hljs-comment">// 5ms</span><br>    <span class="hljs-built_in">saveResult</span>();    <span class="hljs-comment">// 10ms</span><br>&#125;  <span class="hljs-comment">// 持锁25ms！</span><br><br><span class="hljs-comment">// ✅ 细粒度锁</span><br><span class="hljs-built_in">loadData</span>();          <span class="hljs-comment">// 无锁，10ms</span><br>&#123;<br>    <span class="hljs-function">std::lock_guard&lt;std::mutex&gt; <span class="hljs-title">lock</span><span class="hljs-params">(small_mutex)</span></span>;<br>    buffer.<span class="hljs-built_in">push</span>(data);  <span class="hljs-comment">// 持锁1μs</span><br>&#125;<br><span class="hljs-built_in">processData</span>();       <span class="hljs-comment">// 无锁，5ms</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="7-4-无锁读取优化"><a href="#7-4-无锁读取优化" class="headerlink" title="7.4 无锁读取优化"></a>7.4 无锁读取优化</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// 双缓冲的优势：读取端完全无锁！</span><br><span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">readNext</span><span class="hljs-params">(T&amp; data)</span> </span>&#123;<br>    <span class="hljs-comment">// 不需要锁！read_buffer独占访问</span><br>    <span class="hljs-keyword">if</span> (!read_buffer_.<span class="hljs-built_in">empty</span>()) &#123;<br>        data = read_buffer_.<span class="hljs-built_in">back</span>();<br>        read_buffer_.<span class="hljs-built_in">pop_back</span>();<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>    &#125;<br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="📖-延伸阅读"><a href="#📖-延伸阅读" class="headerlink" title="📖 延伸阅读"></a>📖 延伸阅读</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Multiple_buffering">Double Buffering in Computer Graphics</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.cl.cam.ac.uk/~mjg29/drafts/concurrency.html">Lock-Free Programming</a></li>
+<li><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Producer%E2%80%93consumer_problem">Producer-Consumer Problem</a></li>
+<li><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/1239937/c-vectors-reserve-vs-resize">Memory Pre-allocation Techniques</a></li>
+</ul>
+<hr>
+<h2 id="💡-总结"><a href="#💡-总结" class="headerlink" title="💡 总结"></a>💡 总结</h2><p>通过本文学习如下：</p>
+<p>✅ 双缓冲的核心原理和优势<br>✅ 单缓冲vs双缓冲的性能差异<br>✅ O(1)复杂度交换的实现机制<br>✅ 实际应用场景和案例分析<br>✅ 高级优化技巧和调优方法  </p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/C/" class="category-chain-item">C++</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E7%BC%93%E5%86%B2%E8%AE%BE%E8%AE%A1/" class="print-no-link">#缓冲设计</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>C++实现双缓冲</div>
+      <div>https://hanjw123.github.io/2023/05/12/C++实现双缓冲/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>Author</div>
+          <div>hanjw</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>Posted on</div>
+          <div>May 12, 2023</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>Licensed under</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - Attribution">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2023/05/12/C++%E5%A4%9A%E7%BA%BF%E7%A8%8B%E5%9F%BA%E7%A1%80/" title="C++多线程基础 - 从零实现生产者-消费者模式">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">C++多线程基础 - 从零实现生产者-消费者模式</span>
+                        <span class="visible-mobile">Previous</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2023/05/12/C++%E5%AE%9E%E7%8E%B0%E6%A8%A1%E6%9D%BF%E7%BC%96%E7%A8%8B/" title="C++实现模板编程">
+                        <span class="hidden-mobile">C++实现模板编程</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>Table of Contents</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">Keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <span>CCWW Blog @</span> <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    function isExpandAllEnabled() {
+      return CONFIG.toc && CONFIG.toc.expand_all === true;
+    }
+    function expandAllToc() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .tocbot-is-collapsed').removeClass('tocbot-is-collapsed');
+    }
+    function updateTocToggle($li, $childList) {
+      var $toggle = $li.children('.toc-toggle');
+      if ($toggle.length === 0) { return; }
+      var collapsed = $childList.hasClass('tocbot-is-collapsed');
+      $toggle
+        .toggleClass('toc-toggle-collapsed', collapsed)
+        .toggleClass('toc-toggle-expanded', !collapsed);
+    }
+    function bindTocToggle() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .toc-list-item').each(function() {
+        var $li = jQuery(this);
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) {
+          if ($li.children('.toc-toggle').length === 0) {
+            $li.prepend('<span class="toc-toggle toc-toggle-placeholder" aria-hidden="true">›</span>');
+          }
+          return;
+        }
+
+        if ($li.children('.toc-toggle').length === 0) {
+          $li.prepend('<span class="toc-toggle toc-toggle-expanded" aria-hidden="true">›</span>');
+        }
+        updateTocToggle($li, $childList);
+      });
+      jQuery('#toc-body').off('click.tocToggle').on('click.tocToggle', '.toc-toggle', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var $li = jQuery(this).parent('.toc-list-item');
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) { return; }
+        $childList.toggleClass('tocbot-is-collapsed');
+        updateTocToggle($li, $childList);
+      });
+      if (!window.__tocToggleObserver) {
+        window.__tocToggleObserver = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            if (mutation.type !== 'attributes' || mutation.attributeName !== 'class') { return; }
+            var $list = jQuery(mutation.target);
+            var $li = $list.parent('.toc-list-item');
+            if ($li.length === 0) { return; }
+            updateTocToggle($li, $list);
+          });
+        });
+        jQuery('#toc-body ol').each(function() {
+          window.__tocToggleObserver.observe(this, { attributes: true });
+        });
+      }
+    }
+    var tocConfig = Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc);
+    if (isExpandAllEnabled()) {
+      tocConfig.collapseDepth = 6;
+    }
+    window.tocbot.init(tocConfig);
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+    expandAllToc();
+    bindTocToggle();
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+        expandAllToc();
+        bindTocToggle();
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/openkounter.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">Blog works best with JavaScript enabled</div>
+  </noscript>
+</body>
+</html>
